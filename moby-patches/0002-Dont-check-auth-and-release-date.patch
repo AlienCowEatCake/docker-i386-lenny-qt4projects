@@ -1,0 +1,33 @@
+From ecc7729e77027799f26956362962380b784b85fb Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Sat, 26 Dec 2020 23:20:00 +0700
+Subject: [PATCH 2/2] Dont check auth and release date
+
+---
+ contrib/mkimage/debootstrap | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/contrib/mkimage/debootstrap b/contrib/mkimage/debootstrap
+index 1137769..5f8556c 100755
+--- a/contrib/mkimage/debootstrap
++++ b/contrib/mkimage/debootstrap
+@@ -177,6 +177,16 @@ if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
+ 		// https://aptitude.alioth.debian.org/doc/en/ch02s05s05.html#configApt-AutoRemove-SuggestsImportant
+ 		Apt::AutoRemove::SuggestsImportant "false";
+ 	EOF
++
++	echo >&2 "+ echo Acquire::Check-Valid-Until 'false' > '$rootfsDir/etc/apt/apt.conf.d/90ignore-release-date'"
++	cat > "$rootfsDir/etc/apt/apt.conf.d/90ignore-release-date" <<- 'EOF'
++		Acquire::Check-Valid-Until false;
++	EOF
++
++	echo >&2 "+ echo APT::Get::AllowUnauthenticated 'true' > '$rootfsDir/etc/apt/apt.conf.d/99allow_unauth'"
++	cat > "$rootfsDir/etc/apt/apt.conf.d/99allow_unauth" <<- 'EOF'
++		APT::Get::AllowUnauthenticated "true";
++	EOF
+ fi
+ 
+ if [ -z "$DONT_TOUCH_SOURCES_LIST" ]; then
+-- 
+2.20.1
+
