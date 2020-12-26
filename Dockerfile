@@ -82,53 +82,53 @@ RUN wget ftp://ftp.gnu.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2 && \
 RUN apt-get build-dep -y openssl && \
     apt-get clean
 
-RUN wget --no-check-certificate http://cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz && \
-    tar -xvpf cmake-2.8.12.2.tar.gz && \
-    cd cmake-2.8.12.2 && \
-    ./configure --no-qt-gui --prefix=/usr/local && \
+RUN wget --no-check-certificate http://cmake.org/files/v3.13/cmake-3.13.5.tar.gz && \
+    tar -xvpf cmake-3.13.5.tar.gz && \
+    cd cmake-3.13.5 && \
+    ./configure --no-qt-gui --prefix=/usr/local -- -DCMAKE_USE_OPENSSL=OFF && \
     make -j4 && \
     make install && \
     cd .. && \
-    rm -rf cmake-2.8.12.2.tar.gz cmake-2.8.12.2
+    rm -rf cmake-3.13.5.tar.gz cmake-3.13.5
 
-RUN wget --no-check-certificate http://zlib.net/fossils/zlib-1.2.8.tar.gz && \
-    tar -xvpf zlib-1.2.8.tar.gz && \
-    cd zlib-1.2.8 && \
+RUN wget --no-check-certificate http://zlib.net/fossils/zlib-1.2.11.tar.gz && \
+    tar -xvpf zlib-1.2.11.tar.gz && \
+    cd zlib-1.2.11 && \
     CC=/usr/local/bin/gcc CXX=/usr/local/bin/g++ CPP=/usr/local/bin/cpp CFLAGS="-g0" CXXFLAGS="-g0" ./configure --static --prefix=/usr/local && \
     make -j4 && \
     make install && \
     cd .. && \
-    rm -rf zlib-1.2.8.tar.gz zlib-1.2.8
+    rm -rf zlib-1.2.11.tar.gz zlib-1.2.11
 
-RUN wget ftp://ftp.simplesystems.org/pub/libpng/png/src/history/libpng16/libpng-1.6.22.tar.gz && \
-    tar -xvpf libpng-1.6.22.tar.gz && \
-    cd libpng-1.6.22 && \
+RUN wget ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.37.tar.gz && \
+    tar -xvpf libpng-1.6.37.tar.gz && \
+    cd libpng-1.6.37 && \
     mkdir build && \
     cd build && \
     CC=/usr/local/bin/gcc CXX=/usr/local/bin/g++ CPP=/usr/local/bin/cpp CFLAGS="-m32 -g0" CXXFLAGS="-m32 -g0" cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DPNG_SHARED=NO -DPNG_STATIC=YES -DPNG_TESTS=NO .. && \
     make -j4 && \
     make install && \
     cd ../.. && \
-    rm -rf libpng-1.6.22.tar.gz libpng-1.6.22
+    rm -rf libpng-1.6.37.tar.gz libpng-1.6.37
 
-RUN wget --no-check-certificate http://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.6.2.tar.gz && \
-    tar -xvpf freetype-2.6.2.tar.gz && \
-    cd freetype-2.6.2 && \
+RUN wget --no-check-certificate http://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.gz && \
+    tar -xvpf freetype-2.6.5.tar.gz && \
+    cd freetype-2.6.5 && \
     CC=/usr/local/bin/gcc CXX=/usr/local/bin/g++ CPP=/usr/local/bin/cpp CFLAGS="-g0" CXXFLAGS="-g0" ./configure --build=i486-pc-linux-gnu --host=i486-pc-linux-gnu --prefix=/usr/local --enable-shared=no --enable-static=yes --with-zlib=yes --with-png=yes --with-harfbuzz=no --with-bzip2=no && \
     make -j4 && \
     make install && \
     cd .. && \
-    rm -rf freetype-2.6.2.tar.gz freetype-2.6.2
+    rm -rf freetype-2.6.5.tar.gz freetype-2.6.5
 
-RUN wget ftp://ftp.openssl.org/source/old/1.0.2/openssl-1.0.2h.tar.gz && \
-    tar -xvpf openssl-1.0.2h.tar.gz && \
-    cd openssl-1.0.2h && \
+RUN wget ftp://ftp.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz && \
+    tar -xvpf openssl-1.0.2u.tar.gz && \
+    cd openssl-1.0.2u && \
     setarch i386 ./Configure linux-generic32 -m32 --prefix=/usr/local --openssldir=/etc/ssl zlib no-shared no-sse2 && \
     make depend && \
-    make && \
+    make -j4 && \
     make install && \
     cd .. && \
-    rm -rf openssl-1.0.2h.tar.gz openssl-1.0.2h
+    rm -rf openssl-1.0.2u.tar.gz openssl-1.0.2u
 
 # ====================================================================================================
 
