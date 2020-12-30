@@ -5,16 +5,12 @@ CMD ["/bin/bash"]
 RUN groupadd --gid 1000 user && \
     useradd --shell /bin/bash --home-dir /home/user --uid 1000 --gid 1000 --create-home user
 
-RUN sed -i 's/^deb \(.*\)$/deb \1\ndeb-src \1\n/' /etc/apt/sources.list && \
-    apt-get update
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget build-essential m4 bzip2 zlib1g-dev libidn11 && \
+    apt-get install -y --no-install-recommends libdbus-1-dev libgl1-mesa-dev libgtk2.0-dev libcupsys2-dev libasound2-dev libxv-dev && \
+    apt-get clean
 
 WORKDIR /usr/src
-
-# ====================================================================================================
-
-RUN apt-get install -y build-essential devscripts fakeroot bzip2 zlib1g-dev && \
-    apt-get build-dep -y gcc && \
-    apt-get clean
 
 RUN wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1i.tar.gz && \
     tar -xvpf openssl-1.1.1i.tar.gz && \
@@ -37,8 +33,11 @@ RUN wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1i.ta
     strip --strip-all /usr/local/bin/wget && \
     rm -rf /tmp/wget
 
+# ====================================================================================================
+
 ENV LD_LIBRARY_PATH="/usr/local/lib"
 ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+ENV CPATH="/usr/local/include"
 ENV PATH="/usr/local/bin:${PATH}"
 
 RUN wget ftp://ftp.gnu.org/gnu/gmp/gmp-4.2.4.tar.bz2 && \
@@ -79,18 +78,6 @@ RUN wget ftp://ftp.gnu.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2 && \
 
 # ====================================================================================================
 
-RUN apt-get build-dep -y openssl && \
-    apt-get clean
-
-RUN wget --no-check-certificate http://cmake.org/files/v3.13/cmake-3.13.5.tar.gz && \
-    tar -xvpf cmake-3.13.5.tar.gz && \
-    cd cmake-3.13.5 && \
-    ./configure --no-qt-gui --prefix=/usr/local -- -DCMAKE_USE_OPENSSL=OFF && \
-    make -j4 && \
-    make install && \
-    cd .. && \
-    rm -rf cmake-3.13.5.tar.gz cmake-3.13.5
-
 RUN wget --no-check-certificate http://zlib.net/fossils/zlib-1.2.11.tar.gz && \
     tar -xvpf zlib-1.2.11.tar.gz && \
     cd zlib-1.2.11 && \
@@ -105,7 +92,9 @@ RUN wget ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.37.t
     cd libpng-1.6.37 && \
     mkdir build && \
     cd build && \
-    CC=/usr/local/bin/gcc CXX=/usr/local/bin/g++ CPP=/usr/local/bin/cpp CFLAGS="-m32 -g0" CXXFLAGS="-m32 -g0" cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DPNG_SHARED=NO -DPNG_STATIC=YES -DPNG_TESTS=NO .. && \
+    wget --no-check-certificate https://cmake.org/files/v3.6/cmake-3.6.3-Linux-i386.tar.gz && \
+    tar -xvpf cmake-3.6.3-Linux-i386.tar.gz && \
+    CC=/usr/local/bin/gcc CXX=/usr/local/bin/g++ CPP=/usr/local/bin/cpp CFLAGS="-m32 -g0" CXXFLAGS="-m32 -g0" cmake-3.6.3-Linux-i386/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DPNG_SHARED=NO -DPNG_STATIC=YES -DPNG_TESTS=NO .. && \
     make -j4 && \
     make install && \
     cd ../.. && \
@@ -132,14 +121,12 @@ RUN wget ftp://ftp.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz && \
 
 # ====================================================================================================
 
-RUN apt-get build-dep -y qt4-x11 && \
-    apt-get install -y libdbus-1-dev x-dev x11proto-bigreqs-dev x11proto-composite-dev x11proto-core-dev x11proto-damage-dev x11proto-dmx-dev x11proto-evie-dev x11proto-fixes-dev x11proto-fontcache-dev x11proto-fonts-dev x11proto-gl-dev x11proto-input-dev x11proto-kb-dev x11proto-print-dev x11proto-randr-dev x11proto-record-dev x11proto-render-dev x11proto-resource-dev x11proto-scrnsaver-dev x11proto-trap-dev x11proto-video-dev x11proto-xcmisc-dev x11proto-xext-dev x11proto-xf86bigfont-dev x11proto-xf86dga-dev x11proto-xf86dri-dev x11proto-xf86misc-dev x11proto-xf86vidmode-dev x11proto-xinerama-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcupsys2-dev libgtk2.0-dev libasound2-dev libpulse-dev libxv-dev libgstreamer0.10-dev && \
-    apt-get clean
-
 RUN wget --no-check-certificate https://download.qt.io/archive/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz && \
     tar -xvpf qt-everywhere-opensource-src-4.8.7.tar.gz && \
     cd qt-everywhere-opensource-src-4.8.7 && \
-    OPENSSL_LIBS='-L/usr/local/lib -lssl -lcrypto' ./configure -prefix /opt/qt-4.8.7-static -release -opensource -confirm-license -static -no-exceptions -no-qt3support -no-xmlpatterns -multimedia -audio-backend -no-phonon -no-phonon-backend -svg -no-webkit -no-javascript-jit -script -scripttools -declarative -no-declarative-debug -platform linux-g++ -no-mmx -no-3dnow -no-sse -no-sse2 -no-sse3 -no-ssse3 -no-sse4.1 -no-sse4.2 -no-avx -no-neon -qt-zlib -qt-libpng -qt-libtiff -qt-libmng -qt-libjpeg -openssl-linked -no-rpath -optimized-qmake -dbus -gtkstyle -opengl desktop -no-openvg -nomake examples -nomake demos -glib -gstreamer && \
+    ln -s /usr/local/lib/pkgconfig/libpng16.pc /usr/local/lib/pkgconfig/libpng12.pc && \
+    OPENSSL_LIBS='-L/usr/local/lib -lssl -lcrypto' ./configure -prefix /opt/qt-4.8.7-static -release -opensource -confirm-license -static -no-exceptions -no-qt3support -no-xmlpatterns -multimedia -audio-backend -no-phonon -no-phonon-backend -svg -no-webkit -no-javascript-jit -script -scripttools -declarative -no-declarative-debug -platform linux-g++ -no-mmx -no-3dnow -no-sse -no-sse2 -no-sse3 -no-ssse3 -no-sse4.1 -no-sse4.2 -no-avx -no-neon -system-zlib -system-libpng -qt-libtiff -qt-libmng -qt-libjpeg -openssl-linked -no-rpath -optimized-qmake -dbus -gtkstyle -opengl desktop -no-openvg -nomake examples -nomake demos -glib -gstreamer && \
+    rm /usr/local/lib/pkgconfig/libpng12.pc && \
     make -j4 && \
     make install && \
     cd .. && \
